@@ -17,7 +17,13 @@ export function getObject (array, key, value) {
   })
   return o
 }
-// 获取菜单数据和构建路由
+//
+/**
+ * 获取菜单数据和构建路由, 将数据存在localStage
+ * @param {*} parentName
+ * @param {*} parentId
+ * @returns
+ */
 export const getAndPushRouters = (parentName, parentId) => {
   return new Promise((resolve, reject) => {
     userMenu({ params: { id: parentId } }).then((res) => {
@@ -35,16 +41,26 @@ export const getAndPushRouters = (parentName, parentId) => {
     })
   })
 }
+/**
+ * 构建路由和新增数据到状态管理器，
+ * @param {*} parentName 父级菜单的name
+ * @param {*} data 子菜单的数据
+ * @param {*} parentId 父级菜单id
+ * @returns
+ */
 export const gRouter = (parentName, data, parentId) => {
   return new Promise((resolve, reject) => {
     generatorDynamicRouter(data, parentId).then(routes => {
       routes.forEach(item => {
         router.addRoute(parentName, item)
       })
+      // addRoutes 用来构建菜单树
       const storeRoutes = store.getters.addRoutes
+      // 如果是一级菜单直接新增
       if (parentId === 0) {
         store.dispatch('setAddRoutes', [].concat(storeRoutes, routes))
       } else {
+        // 如果是二级以上菜单，那么找到该父菜单，并且新增到children中
         const obj = getObject(storeRoutes, 'name', parentName)
         obj.children = [].concat(obj.children, routes)
         store.dispatch('setAddRoutes', storeRoutes)
